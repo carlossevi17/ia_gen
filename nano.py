@@ -1,44 +1,64 @@
 import streamlit as st
-import time
+import requests
+from io import BytesIO
 
-st.set_page_config(page_title="Nano Banana Gen", page_icon="🍌")
+# Configuración estética
+st.set_page_config(page_title="Nano Banana AI", page_icon="🍌", layout="centered")
 
-st.title("🎨 Nano Banana Image Generator")
+st.markdown("""
+    <style>
+    .main { background-color: #fafafa; }
+    stButton>button { width: 100%; border-radius: 10px; background-color: #f4d03f; color: black; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Sidebar para la API Key
+st.title("🍌 Nano Banana Image Generator")
+st.write("Crea imágenes increíbles con IA y descárgalas al instante.")
+
+# Sidebar para la Key
 with st.sidebar:
+    st.header("Configuración")
     api_key = st.text_input("Introduce tu API Key", type="password")
-    st.caption("Nota: Sin la Key, la generación fallará.")
+    st.info("La API de Nano Banana requiere una clave válida para procesar el prompt.")
 
-prompt = st.text_area("¿Qué quieres crear?", placeholder="Un paisaje futurista...")
+# Entrada del usuario
+prompt = st.text_area("¿Qué quieres que la IA dibuje?", placeholder="Un gato astronauta en Marte...")
 
-if st.button("Generar Imagen"):
+if st.button("🚀 Generar Imagen"):
     if not api_key:
-        st.error("Por favor, introduce tu API Key en la barra lateral.")
+        st.error("⚠️ Falta la API Key en la barra lateral.")
     elif not prompt:
-        st.warning("Escribe un prompt primero.")
+        st.warning("⚠️ Por favor, escribe un prompt.")
     else:
-        with st.spinner("🚀 Nano Banana está creando tu imagen..."):
+        with st.spinner("🎨 Pintando tu idea..."):
             try:
-                # --- AQUÍ SUCEDE LA MAGIA ---
-                # Usamos la capacidad nativa de generación de imágenes
-                # En una app real de Streamlit, aquí llamarías a tu endpoint:
-                # response = requests.post(URL, headers=headers, json=payload)
+                # --- LLAMADA REAL A LA API ---
+                # Sustituye 'URL_DE_NANO_BANANA' por el endpoint real (ej. https://api.nanobanana.ai/v1/generate)
+                # response = requests.post("URL_DE_NANO_BANANA", 
+                #                          headers={"Authorization": f"Bearer {api_key}"},
+                #                          json={"prompt": prompt})
                 
-                # Simulación de proceso para la interfaz
-                time.sleep(2) 
+                # SIMULACIÓN DE RECEPCIÓN DE IMAGEN (Para que veas cómo se muestra)
+                # En producción, usa: image_bytes = response.content
+                # Aquí usamos una imagen de prueba real para que no veas el icono roto:
+                img_url = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop"
+                response = requests.get(img_url)
+                image_bytes = response.content
+
+                # 1. Mostrar la imagen
+                st.image(image_bytes, caption="Tu creación artística", use_container_width=True)
                 
-                # MOSTRAR LA IMAGEN
-                # Importante: Aquí es donde antes no salía nada.
-                st.success("¡Imagen generada!")
-                
-                # Nota: Para que esto funcione en tu despliegue local, 
-                # debes asignar el resultado de la API a una variable.
-                
-                # Marcador visual de donde aparecerá la imagen:
-                st.image("https://via.placeholder.com/1024x1024.png?text=Imagen+Generada+con+Nano+Banana", 
-                         caption="Tu creación artística", 
-                         use_container_width=True)
-                
+                # 2. Crear botón de descarga
+                st.download_button(
+                    label="💾 Descargar Imagen (PNG)",
+                    data=image_bytes,
+                    file_name="mi_generacion_banana.png",
+                    mime="image/png"
+                )
+                st.success("¡Imagen lista!")
+
             except Exception as e:
-                st.error(f"Error al generar: {e}")
+                st.error(f"Hubo un error en la conexión: {e}")
+
+st.divider()
+st.caption("Desarrollado con Streamlit y Nano Banana")
