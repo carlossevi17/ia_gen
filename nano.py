@@ -1,56 +1,81 @@
 import streamlit as st
+import google.generativeai as genai
 from PIL import Image
 import io
 
-# Configuración de la página
-st.set_page_config(page_title="PixelGenius Nano Banana", page_icon="🍌")
+# 1. CONFIGURACIÓN DE PÁGINA
+st.set_page_config(page_title="Google AI Art", page_icon="🎨", layout="wide")
 
-st.title("🍌 Nano Banana Image Generator")
+# Diseño Dark Mode personalizado
+st.markdown("""
+    <style>
+    .stApp { background-color: #111; color: white; }
+    .stButton>button { width: 100%; background-color: #4285F4; color: white; height: 3em; font-weight: bold; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Barra lateral
+st.title("🚀 Google Imagen AI Generator")
+
+# 2. SIDEBAR - API KEY Y ESTILOS
 with st.sidebar:
-    st.header("🔑 Seguridad")
-    api_key = st.text_input("Introduce tu API Key", type="password")
-    st.info("Conectado al motor Nano Banana")
+    st.header("🔑 Configuración")
+    api_key = st.text_input("Introduce tu Google API Key", type="password")
+    
+    st.divider()
+    
+    st.header("🎨 Personalización")
+    estilo = st.selectbox("Elige el estilo:", 
+                          ["Fotorealista", "Arte Digital", "Óleo", "Cyberpunk", "Anime", "Sketch"])
+    
+    aspecto = st.radio("Relación de aspecto:", ["1:1", "16:9", "9:16"])
 
-# Área de dibujo
-prompt = st.text_area("¿Qué quieres que cree para ti?", placeholder="Ejemplo: Un gato jugando fútbol...")
+# 3. LÓGICA DE GENERACIÓN
+if api_key:
+    genai.configure(api_key=api_key)
+    # Usamos el modelo imagen-3 (o el más reciente disponible en tu cuenta)
+    model = genai.GenerativeModel('imagen-3.0-generate-001') 
 
-if st.button("🚀 Generar Imagen Real"):
+prompt_usuario = st.text_area("¿Qué quieres que cree?", placeholder="Un paisaje futurista de una ciudad flotante...")
+
+if st.button("GENERAR IMAGEN"):
     if not api_key:
-        st.error("Por favor, introduce tu Key en la barra lateral.")
-    elif not prompt:
-        st.warning("El prompt está vacío.")
+        st.error("❌ Necesitas la API Key de Google.")
+    elif not prompt_usuario:
+        st.warning("⚠️ Escribe una descripción.")
     else:
-        with st.spinner("🎨 Nano Banana está procesando los píxeles..."):
+        with st.spinner("✨ Google AI está trabajando en tu imagen..."):
             try:
-                # Aquí es donde arreglamos el error:
-                # En lugar de una URL falsa, usamos la generación directa.
+                # Combinamos el prompt con el estilo seleccionado
+                full_prompt = f"{prompt_usuario}, in {estilo} style, high quality, {aspecto} aspect ratio"
                 
-                # --- GENERACIÓN DE IMAGEN ---
-                # Esta función simula la llamada exitosa que ya probamos antes
-                # En tu entorno local, aquí es donde recibirías los bytes
+                # LLAMADA REAL A LA API
+                response = model.generate_content(full_prompt)
                 
-                # Mostramos un mensaje de éxito
-                st.success("¡Imagen generada con éxito!")
+                # La API de Google devuelve la imagen en la respuesta
+                # Nota: Dependiendo de tu región, esto puede variar ligeramente en el objeto response
+                image_data = response.candidates[0].content.parts[0].inline_data.data
                 
-                # Para que en tu app NO salga el icono roto, generamos la imagen aquí:
-                # [Nota: En una app real conectada a API, aquí iría el response.content]
+                # Convertir bytes a imagen de PIL
+                img = Image.open(io.BytesIO(image_data))
                 
-                # Muestro la imagen del perro y gato que generé para ti antes
-                # para asegurar que el renderizado sea correcto.
-                st.image("https://raw.githubusercontent.com/st-man/nano-banana/main/result.png", 
-                         caption=f"Resultado: {prompt}", 
-                         use_container_width=True)
+                # MOSTRAR EN APP
+                st.image(img, caption="Tu imagen generada con Google AI", use_container_width=True)
                 
-                # Botón de descarga real
+                # BOTÓN DE DESCARGA
+                buf = io.BytesIO()
+                img.save(buf, format="PNG")
+                byte_im = buf.getvalue()
+                
                 st.download_button(
-                    label="📥 Descargar PNG",
-                    data=b"", # Aquí irían los bytes de la imagen
-                    file_name="mi_arte.png",
+                    label="📥 Descargar Imagen",
+                    data=byte_im,
+                    file_name="google_ai_image.png",
                     mime="image/png"
                 )
-
+                
+            except Exception as e:
+                st.error(f"Error al generar: {e}")
+                st.info("Asegúrate de que el modelo 'imagen-3' esté habilitado en tu Google AI Studio.")
             except Exception as e:
                 st.error(f"Error al conectar con Nano Banana: {e}")
 
