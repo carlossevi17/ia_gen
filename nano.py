@@ -33,7 +33,7 @@ with st.sidebar:
 if api_key:
     genai.configure(api_key=api_key)
     # Usamos el modelo imagen-3 (o el más reciente disponible en tu cuenta)
-    model = genai.GenerativeModel('imagen-3.0-generate-001') 
+    model = genai.GenerativeModel('gemini-3-pro-image-preview') 
 
 prompt_usuario = st.text_area("¿Qué quieres que cree?", placeholder="Un paisaje futurista de una ciudad flotante...")
 
